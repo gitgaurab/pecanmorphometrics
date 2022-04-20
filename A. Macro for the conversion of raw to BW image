@@ -1,7 +1,6 @@
+##This is the macro used to batch process raw images into black and white images.
 macro "Set Display Range..." {
     min = 56;
     max = 57;
     setMinAndMax(min, max);
 }
-
-### Alternatively setting min=26 and max=40 parameters gives a very similar result.
