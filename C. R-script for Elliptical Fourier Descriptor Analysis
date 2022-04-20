@@ -1,1 +1,110 @@
+##Tomato analyzer gives x,y coordinates of 200 morphometric points. These morphometric coordinates needs to be saved in "CSV" file with following data format. 
+
+id	1x	  1y	  2x	  2y	  3x
+70-6-15	239	0	228	5	219
+70-6-15	222	0	214	6	213
+70-6-15	211	5	200	0	191
+70-6-15	155	0	146	5	143
+
+## First column for genotype ID. After that there will be 400 (200 for x and 200 for y) columns with coordinate values.
+
+## R script to perform Elliptical Fourier transform
+
+##Clean
+rm(list=ls())
+
+# Dependencies (Install and load required packages)
+install.packages("ape")
+library(ape)
+library(tidyverse)
+library(Momocs)
+
+##Upload the dataset
+
+sut<-read.csv("c:/Users/gb92068/Documents/data_analysis_heritability/Rstudio/data/morphometric_analysis/suture/suture.csv",header = TRUE)
+sut<-as_tibble(sut)
+fac<-sut %>%
+  select(-matches("X[[:digit:]]+(x|y)")) %>% 
+  select(id)
+
+coo<-sut %>% 
+  select(matches("X[[:digit:]]+(x|y)")) %>%
+  split(1:nrow(.)) %>% 
+  map(~.x %>% 
+        select(matches("X[[:digit:]]+(x|y)")) %>% 
+        unlist() %>% 
+        na.omit() %>%
+        matrix(ncol=2, byrow=T))
+
+suture<-Out(coo,fac)
+
+polish <- function(df){
+  df %>% 
+    # avoid factor related complications
+    mutate(id=as.character(id))
+}
+
+suture$fac <- suture$fac %>% polish()
+
+pecan_pipe <- function(x) {
+  x %>% 
+    # align along the longest diameter
+    coo_aligncalliper() %>% 
+    # define two landmarks
+    def_ldk_direction("right") %>% 
+    def_ldk_direction("left") %>% 
+    # register a baseline (ie removing rot, trans, scale diffs)
+    coo_bookstein(ldk1 = 1, ldk2=2) %>% 
+    # normalize for first point position
+    coo_slide(ldk=2)
+}
+
+# apply to the entire dataset
+suture_al<- suture %>% pecan_pipe()
+
+#Calculate harmonic power
+suture_al %>% calibrate_harmonicpower_efourier()
+### 7 harmonic power to get 95% confidence and 12 harmonic power to get 99% confidence
+
+# Elliptical Fourier transform step(s) #####Removed assymetrical variation and 99% of accuracy######
+suture_eft<- suture_al %>% efourier(nb.h=12, norm=FALSE) %>% rm_asym()
+
+### Save EF coefficients as a dataframe
+
+coe_df<-as.data.frame(suture_eft$coe)
+names<-sut$id ##Extract genotype ID from 
+coe_df$id<-names ##Give genotype IDs to each row
+
+coe_df_mean<-coe_df %>% group_by(id) %>% summarise_all(mean)## Get the average values of elliptical fourier coefficient per tree
+##Write CSV file to store EF coefficient
+write.csv(coe_df_mean,"C:/Users/gb92068/Documents/data_analysis_heritability/Rstudio/results/morphometrics/suture/coe_df_mean_by_tree.csv")
+##Clean
+rm(list = ls())
+
+##Running principal component analysis
+
+install.packages("ggfortify")
+library(ggfortify)
+install.packages(“ggplot2”)
+library(ggplot2)
+
+##Upload the coefficient data for suture side
+
+data=read.csv("C:/Users/gb92068/Documents/data_analysis_heritability/Rstudio/results/morphometrics/suture/coe_df_mean_by_tree_edited_for_pca.csv")
+
+df <- data[3:26] ##Take coefficient columns
+pca_res <- prcomp(df, scale. = TRUE) ##Run PCA
+summary(pca_res)
+
+autoplot(pca_res) ##Plot first two PCs
+
+pc_values=data.frame(pca_res$x[,1:6]) ##Extract 6 PCs
+head(pc_values) ##Check if everything okay
+
+##Add extra columns to identify the tree and family
+pc_values$id=data$id
+pc_values$label=data$Label
+
+##Write CSV file for 6 PCs
+write.csv(pc_values,"C:/Users/gb92068/Documents/data_analysis_heritability/Rstudio/results/morphometrics/suture/suture_pcs_averaged_per_tree.csv")
 
