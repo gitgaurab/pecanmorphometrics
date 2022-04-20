@@ -1,1 +1,8 @@
+## This macro inverts color of black and white image in ImageJ software.
+##Steps
+#1. Open ImageJ, click on Process>Batch>Macro
+#2. Select the input folder where black and white imagaes are stored. Select output folder where color inverted images need to be stored.
+#3. Choose output format as JPEG
+#4. Select 'Invert' from the drop down menu (Add macro code). This will add run("Invert"); in the box. Then click process. 
+
 run("Invert");
