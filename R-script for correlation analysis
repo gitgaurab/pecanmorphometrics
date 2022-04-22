@@ -1,0 +1,37 @@
+rm(list = ls()) ## Clear
+## Install and load required R packages
+install.packages("Hmisc")
+library(Hmisc)
+install.packages("corrplot")
+library(corrplot)
+install.packages("PerformanceAnalytics")
+library("PerformanceAnalytics")
+
+## Upload data
+sut=read.csv("data/suture_side_corr.csv",row.names = 2)
+
+## Check data
+head(sut)
+
+## Subsetting dataset with desirable traits to be analyzed
+sut_select=sut[,c(4,5,6,10,12,13,15,16,19,20,22,24,25)]
+
+## Run correlation analysis
+res_sut<-cor(sut_select)
+
+## Generating correlation plots
+tiff(filename="graphs/suture_corr_with_1-cir.tif", units="in", width=5, height=5, res=1200) ## Define folder to save plot, its format and resolution
+corrplot(res_sut, type = "upper", order = "original", tl.col = "black", tl.srt = 90,tl.cex = 1.2,method = "square") ##Generate the plot
+graphics.off() ##Turn off the graphics. This will save plot in the output folder
+
+##Save Pearson's correlation coefficients
+corr_coeff_sut=as.data.frame(res_sut)
+write.csv(corr_coeff_sut,"results/correlation_coefficient_suture.csv",row.names = TRUE)
+
+
+# Get the p-values
+
+p_matrix=cor.mtest(sut_select)
+pvalues=as.data.frame(p_matrix$p,row.names = rownames(corr_coeff_sut))
+colnames(pvalues)=c("PC1","PC2","PC3","MW","MH","FSIEI","DFB","PFB","cir","rect","DisAMa","ProAMa","ovo")
+write.csv(pvalues,"results/p_values_suture.csv",row.names = TRUE)
