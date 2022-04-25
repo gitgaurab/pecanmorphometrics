@@ -1,1 +1,16 @@
 ## Clear
+rm(list = ls())
+## Install and load R packages
+install.packages("tidyverse")
+library(tidyverse)
+install.packages("dplyr")
+library(dplyr)
+install.packages("car")
+library(car)
+
+##Upload the dataset
+## Dataset will have columns for mid-parent phenotypic value and progeny mean
+mydata=read.csv("C:/Users/gb92068/Documents/data_analysis_heritability/Rstudio/data/suture_linear_family_mean_female_male_midparent_progeny.csv")
+
+## Run the regression model for each phenotype and view summary
+summary(lm(MH~mid_MH,data=mydata)) ## Example for maximum height
