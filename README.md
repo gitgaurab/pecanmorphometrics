@@ -1,5 +1,5 @@
 # pecanmorphometrics
-# Mid-parent and offspring means are provided in .txt file.
+# Mid-parent value and offspring means are provided in the .txt file.
 #Abberviation
 # Mid-parent
 mid_MW	Maximum width
