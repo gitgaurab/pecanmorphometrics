@@ -1,6 +1,0 @@
-##Upload the dataset
-
-mydata=read.table("mid_parent_offspring_mean_data.txt")
-
-## Run the linear regression model for each phenotype and check summary
-summary(lm(MW~mid_MW,data=mydata))
