@@ -1,6 +1,6 @@
 ##Upload the dataset
 
-mydata=read.csv("shape_data.csv")
+mydata=read.table("mid_parent_offspring_mean_data.txt")
 
 ## Run the linear regression model for each phenotype and check summary
-summary(lm(offspring_maximum_width~midparent_maximum_width,data=mydata))
+summary(lm(MW~mid_MW,data=mydata))
